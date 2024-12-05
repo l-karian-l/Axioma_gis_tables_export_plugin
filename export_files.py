@@ -9,8 +9,6 @@ from PySide2.QtGui import QIcon
 from typing import Union
 from PySide2 import QtCore
 
-# Добавить эмблемы и картинки!
-
 class MyDialog(QDialog):
     def __init__(self, parent):
         super(MyDialog, self).__init__(parent)
@@ -19,8 +17,8 @@ class MyDialog(QDialog):
 
         icon_path = os.path.join(os.path.dirname(__file__), "icon/logo.png")  # Путь к иконке
         self.ui.setWindowIcon(QIcon(icon_path))
-
-        #Настройка Progress Bar
+      
+      # Настройка Progress Bar
         self.ui.progBar_tab.setValue(0)
         self.ui.progBar_data.setValue(0)
 
@@ -29,37 +27,37 @@ class MyDialog(QDialog):
         self.ui.toolB_selectWay.clicked.connect(self.set_filepath)
         self.ui.toolB_selectCK.clicked.connect(self.set_coords)
 
-        # Флаг состояния завершения задачи
+      # Флаг состояния завершения задачи
         self.is_task_completed = False
 
-        # Флаг выполнения задачи
+      # Флаг выполнения задачи
         self.is_task_running = False
 
-        # Флаг отмены
+      # Флаг отмены
         self.is_canceled = False
 
-    #Выполнение нажатия кнопок
-        # Кнопка "Ок"
+   # Выполнение нажатия кнопок
+       # Кнопка "Ок"
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 
         self.ui.buttonBox.button(QDialogButtonBox.Ok).clicked.disconnect()
         self.ui.buttonBox.button(QDialogButtonBox.Ok).clicked.connect(self.on_ok_clicked)
 
-        # Кнопка "Отмена"
+       # Кнопка "Отмена"
         self.ui.buttonBox.button(QDialogButtonBox.Cancel).clicked.disconnect()
         self.ui.buttonBox.button(QDialogButtonBox.Cancel).setText("Закрыть")
         self.ui.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.on_cancel_clicked)
 
-        # Для кнопки "Х" устанавливаем фильтр событий на диалог
+       # Для кнопки "Х" устанавливаем фильтр событий на диалог
         self.ui.installEventFilter(self)
 
-        #  Check box "Выбрать все"
+       # Check box "Выбрать все"
         self.ui.checkBox_selectAll.stateChanged.connect(self.select_all_tables)
 
-        # Отслеживание изменений в таблице
+       # Отслеживание изменений в таблице
         self.ui.tableWidget.itemChanged.connect(self.update_ok_button_state)
 
-    #Отображение всех открытых таблиц
+   # Отображение всех открытых таблиц
     def set_tab_name(self):
         tables = data_manager.tables
         self.ui.tableWidget.setColumnCount(1)
@@ -71,7 +69,7 @@ class MyDialog(QDialog):
             name_t.append(t.name)
         self.ui.tableWidget.setHorizontalHeaderLabels(['Таблицы'])
 
-        #Настройка Check box, для выбора таблиц
+       # Настройка Check box, для выбора таблиц
         for row, string in enumerate(name_t, 0):
             chkBoxItem = QTableWidgetItem(string)
             chkBoxItem.setText(string)
@@ -79,7 +77,7 @@ class MyDialog(QDialog):
             chkBoxItem.setCheckState(Qt.Unchecked)
             self.ui.tableWidget.setItem(row, 0, chkBoxItem)
 
-    # Проверка состояния чекбоксов и обновление состояния кнопки "ОК"
+  # Проверка состояния чекбоксов и обновление состояния кнопки "ОК"
     def update_ok_button_state(self):
         any_checked = False
         all_checked = True
@@ -93,21 +91,20 @@ class MyDialog(QDialog):
 
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(any_checked)
 
-        # Обновляем состояние чекбокса "Выбрать все"
+      # Обновляем состояние чекбокса "Выбрать все"
         self.ui.checkBox_selectAll.blockSignals(True)
         self.ui.checkBox_selectAll.setCheckState(Qt.Checked if all_checked else Qt.Unchecked)
         self.ui.checkBox_selectAll.blockSignals(False)
 
-    #Функционал работы Check box "Выбрать все"
-
-    # Выставление значений при нажатии на check box "Выбрать все"
+# Функционал работы Check box "Выбрать все"
+  # Выставление значений при нажатии на check box "Выбрать все"
     def select_all_tables(self, state):
-        # Проходим по всем элементам таблицы и устанавливаем состояние чекбоксов
+      # Проходим по всем элементам таблицы и устанавливаем состояние чекбоксов
         for row in range(self.ui.tableWidget.rowCount()):
             item = self.ui.tableWidget.item(row, 0)
             item.setCheckState(Qt.Checked if state == Qt.Checked else Qt.Unchecked)
 
-    #Отображение пути при открытии
+  # Отображение пути при открытии
     def first_filepath(self):
         self.last_save_path = CurrentSettings.LastSavePath
         if not self.last_save_path.exists():
@@ -117,18 +114,18 @@ class MyDialog(QDialog):
 
         self.ui.lineEdit_way.setText(first_filepath)
 
-    # Отображение выбранного пути
+  # Отображение выбранного пути
     def set_filepath(self):
         self.assign_a_path = QFileDialog.getExistingDirectory()
         self.ui.lineEdit_way.setText(self.assign_a_path)
 
-    #Отображение системы координат
+  # Отображение системы координат
     def first_coords(self):
         tables = data_manager.tables
         self.result_cs = tables[0].schema.coordsystem
         self.ui.lineEdit_CK.setText(self.result_cs.title)
 
-    #Отображение выбранной системы координат
+  # Отображение выбранной системы координат
     def set_coords(self):
         csMercator = CoordSystem.from_prj('10, 104, 7, 0')
         dialog = ChooseCoordSystemDialog(csMercator)
@@ -136,20 +133,20 @@ class MyDialog(QDialog):
             self.result_cs = dialog.chosenCoordSystem()
             self.ui.lineEdit_CK.setText(self.result_cs.title)
 
-    #Прогресс бар для таблицы
+  # Прогресс бар для таблицы
     def setProgress_tab(self, progress, text):
         self.ui.progBar_tab.setFormat(text + "    %p%")
         self.ui.progBar_tab.setValue(progress)
 
-    #Прогресс бар для элементов таблицы
+  # Прогресс бар для элементов таблицы
     def setProgress_data(self, progress):
         self.ui.progBar_data.setValue(progress)
 
-    # Функционал кнопки "Ок"
+  # Функционал кнопки "Ок"
     def on_ok_clicked(self):
             self.run_button()
 
-    # Функционал кнопки "Отмена" и кнопки "X"
+  # Функционал кнопки "Отмена" и кнопки "X"
     @QtCore.Slot()
     def on_cancel_clicked(self):
         if self.is_task_running and self.task:
@@ -157,14 +154,14 @@ class MyDialog(QDialog):
             self.is_canceled = True
             self.ui.removeEventFilter(self)
         else:
-            # Если задача не запущена, закрываем диалог
+          # Если задача не запущена, закрываем диалог
             self.ui.progBar_tab.setValue(0)
             self.ui.progBar_data.setValue(0)
             self.ui.progBar_tab.setFormat("" + "    %p%")
             self.ui.removeEventFilter(self)
             self.ui.close()
 
-    # Функционал кнопки "X"
+   # Функционал кнопки "X"
     def eventFilter(self, watched, event):
         if watched is self.ui and event.type() == QEvent.Close:
             self.on_cancel_clicked()
@@ -176,7 +173,7 @@ class MyDialog(QDialog):
         self.ui.progBar_data.setValue(0)
         self.ui.progBar_tab.setFormat("" + "    %p%")
 
-        # Сбрасываем состояния чекбоксов
+      # Сбрасываем состояния чекбоксов
         for row in range(self.ui.tableWidget.rowCount()):
             item = self.ui.tableWidget.item(row, 0)
             if item is not None:
@@ -187,12 +184,12 @@ class MyDialog(QDialog):
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)  # Включаем кнопку после завершения задачи
         self.ui.buttonBox.button(QDialogButtonBox.Cancel).setText("Закрыть")
 
-    # Запуск экспорта
+  # Запуск экспорта
     def run_button(self):
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.buttonBox.button(QDialogButtonBox.Cancel).setText("Отмена")
 
-        #Функционал взятия имен таблиц
+      # Функционал взятия имен таблиц
         try:
             checked_items = []
             for row in range(self.ui.tableWidget.rowCount()):
@@ -200,15 +197,15 @@ class MyDialog(QDialog):
                 if item.checkState() == Qt.Checked:
                     checked_items.append(item.text())
 
-            #Определение конечного пути
+          # Определение конечного пути
             filepath = self.ui.lineEdit_way.text()
 
-            #Определение системы координат
+          # Определение системы координат
             coord = self.result_cs
 
             self.is_task_running = True
-
-            #Запуск самой задачи
+          
+          # Запуск самой задачи
             self.task = CopyTablesInFile(list_name=checked_items, filepath=filepath, coords=coord)
             self.task.upProg_exp_tab.connect(self.setProgress_tab)
             self.task.upProg_exp_feat.connect(self.setProgress_data)
@@ -216,14 +213,14 @@ class MyDialog(QDialog):
 
         finally:
             self.is_task_running = False
-            # Проверяем флаг отмены
+          # Проверяем флаг отмены
             if self.is_canceled:
                 self.ui.progBar_tab.setValue(0)
                 self.ui.progBar_data.setValue(0)
                 self.ui.progBar_tab.setFormat("" + "    %p%")
                 self.is_canceled = False  # Сбрасываем флаг отмены
 
-                # Устанавливаем флаги завершения задачи и активируем кнопку "ОК"
+              # Устанавливаем флаги завершения задачи и активируем кнопку "ОК"
                 self.is_task_running = False
                 self.is_task_completed = True
                 self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)  # Включаем кнопку после завершения задачи
@@ -261,11 +258,11 @@ class CopyTablesInFile(QObject):
         self.title = "Конвертация отменена."
         self.title1 = "Экспорт таблиц"
 
-    # Устанавливаем флаг отмены
+  # Устанавливаем флаг отмены
     def cancel(self):
         self.is_cancel = True
 
-    #Удаление последнего файла при выполнении "Отмены"
+  # Удаление последнего файла при выполнении "Отмены"
     def del_file(self):
         if self.last_created_file:
             base_name, _ = os.path.splitext(self.last_created_file)
@@ -279,7 +276,7 @@ class CopyTablesInFile(QObject):
                 except Exception as e:
                     Notifications.push(self.title,f"Ошибка при удалении файла {file_path}: {e}",Notifications.Critical)
 
-            # Уведомление об отмене
+          # Уведомление об отмене
             Notifications.push(
                 self.title1,
                 f"Конвертация завершена.\nСконвертировано файлов: {(self.completed_tables - 1)} из {len(self.list_name)}."
@@ -303,7 +300,7 @@ class CopyTablesInFile(QObject):
                         #schema = t.schema
                         #schema.coordsystem = self.coords
 
-                        #Для того, чтобы сохранялись охваты
+                      # Для того, чтобы сохранялись охваты
                         attrs = [t.schema.by_name(name) for name in t.schema.attribute_names]
                         schema = Schema(*attrs, coordsystem=self.coords)
 
@@ -326,7 +323,7 @@ class CopyTablesInFile(QObject):
             self.title1,
             f"Конвертация завершена.\n " + f"Сконвертировано файлов: " + f"{self.completed_tables} из {len(self.list_name)}.")
 
-    #Фун-ция для прогресс-бара для экспорта фич таблицы
+  # Фун-ция для прогресс-бара для экспорта фич таблицы
     def func_exp_feat(self, feature: Feature, row: int) -> Union[None, bool]:
         if self.is_cancel:
             return False
