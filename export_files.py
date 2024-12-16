@@ -257,6 +257,10 @@ class CopyTablesInFile(QObject):
 
         self.title = "Конвертация отменена."
         self.title1 = "Экспорт таблиц"
+        ''' CoordSystem текущей исходной таблицы'''
+        self.__cs_curent_table=None
+        ''' CoordSystem текущей результирующей  таблицы'''
+        self.__cs_out_current=None
 
   # Устанавливаем флаг отмены
     def cancel(self):
@@ -302,8 +306,16 @@ class CopyTablesInFile(QObject):
 
                       # Для того, чтобы сохранялись охваты
                         attrs = [t.schema.by_name(name) for name in t.schema.attribute_names]
-                        schema = Schema(*attrs, coordsystem=self.coords)
-
+                        ''' Если исходная coordsystem план-схема определяем bound '''
+                        if t.coordsystem.non_earth:
+                            bound=t.get_bounds()
+                            out_cs=self.coords
+                            out_cs.rect=bound
+                            schema = Schema(*attrs, coordsystem=out_cs)
+                        else:
+                            schema = Schema(*attrs, coordsystem=self.coords)
+                        self.__cs_curent_table=t.coordsystem
+                        self.__cs_out_current=schema.coordsystem
                         filepath = f'{self.filepath}/{t.name}.TAB'
                         self.last_created_file = filepath
                         dest = provider_manager.tab.get_destination(filepath, schema)
@@ -329,7 +341,10 @@ class CopyTablesInFile(QObject):
             return False
         else:
             self.processed_items += 1
-
+            ''' Если исходная  coordsystem план- схема , устанавливаем coordsytem выходной проекции из схемы'''
+            if self.__cs_curent_table.non_earth:
+                if feature.geometry is not None:
+                    feature.geometry.coordsystem=self.__cs_out_current
             overall_progress = int(self.processed_items * 100 / self.total_items)
             self.upProg_exp_feat.emit(overall_progress)
             QCoreApplication.processEvents()
